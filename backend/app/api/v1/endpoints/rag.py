@@ -1,7 +1,7 @@
 from fastapi import APIRouter, UploadFile, File, HTTPException
 from pathlib import Path
 import shutil
-
+from app.services.async_rag_service import run_rag
 router = APIRouter()
 
 UPLOAD_DIR = Path("uploads")
@@ -46,5 +46,21 @@ async def upload_document(file: UploadFile = File(...)):
         "filename": file.filename,
         "path": str(file_path)
     }
+from fastapi import APIRouter
+from fastapi.responses import StreamingResponse
+from pydantic import BaseModel
+
+
+
+class QuestionRequest(BaseModel):
+    question: str
+
+
+@router.post("/ask")
+async def ask_question(request: QuestionRequest):
+    return StreamingResponse(
+        run_rag(request.question),
+        media_type="text/plain; charset=utf-8",
+    )
 
 
